@@ -22,7 +22,7 @@ import dev.kordex.core.i18n.capitalizeWords
 import dev.kordex.core.i18n.generated.CoreTranslations
 import dev.kordex.core.i18n.types.Key
 import dev.kordex.core.pagination.builders.PageTransitionCallback
-import dev.kordex.core.pagination.pages.Pages
+import dev.kordex.core.pagination.pages.DefaultPages
 import dev.kordex.core.utils.scheduling.Scheduler
 import dev.kordex.core.utils.scheduling.Task
 import kotlinx.coroutines.runBlocking
@@ -34,7 +34,7 @@ import kotlin.math.roundToInt
  * Abstract class containing some common functionality needed by interactive button-based paginators.
  */
 public abstract class BaseButtonPaginator(
-	pages: Pages,
+	pages: DefaultPages,
 	chunkedPages: Int = 1,
 	owner: UserBehavior? = null,
 	timeoutSeconds: Long? = null,

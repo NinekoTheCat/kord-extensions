@@ -17,7 +17,7 @@ import dev.kord.core.entity.ReactionEmoji
 import dev.kord.rest.builder.message.allowedMentions
 import dev.kordex.core.pagination.builders.PageTransitionCallback
 import dev.kordex.core.pagination.builders.PaginatorBuilder
-import dev.kordex.core.pagination.pages.Pages
+import dev.kordex.core.pagination.pages.DefaultPages
 import java.util.*
 
 /**
@@ -28,7 +28,7 @@ import java.util.*
  * @param targetChannel Target channel to send the paginator to, if [targetMessage] isn't provided.
  */
 public class MessageButtonPaginator(
-	pages: Pages,
+	pages: DefaultPages,
 	chunkedPages: Int = 1,
 	owner: UserBehavior? = null,
 	timeoutSeconds: Long? = null,

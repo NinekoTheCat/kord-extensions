@@ -32,14 +32,13 @@ import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.ephemeralSlashCommand
 import dev.kordex.core.extensions.publicSlashCommand
 import dev.kordex.core.i18n.EMPTY_KEY
-import dev.kordex.core.i18n.capitalizeWords
 import dev.kordex.core.i18n.toKey
 import dev.kordex.core.i18n.types.Key
 import dev.kordex.core.i18n.withContext
 import dev.kordex.core.pagination.EXPAND_EMOJI
 import dev.kordex.core.pagination.PublicResponsePaginator
+import dev.kordex.core.pagination.pages.DefaultPages
 import dev.kordex.core.pagination.pages.Page
-import dev.kordex.core.pagination.pages.Pages
 import dev.kordex.core.sentry.BreadcrumbType
 import dev.kordex.core.storage.StorageType
 import dev.kordex.core.storage.StorageUnit
@@ -51,20 +50,44 @@ import dev.kordex.modules.func.mappings.i18n.generated.MappingsTranslations
 import dev.kordex.modules.func.mappings.plugins.MappingsPlugin
 import dev.kordex.modules.func.mappings.storage.MappingsConfig
 import dev.kordex.modules.func.mappings.utils.*
-import dev.kordex.modules.func.mappings.utils.MojangReleaseContainer
-import dev.kordex.modules.func.mappings.utils.YarnReleaseContainer
-import dev.kordex.modules.func.mappings.utils.toNamespace
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.toSet
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.withContext
 import me.shedaniel.linkie.*
 import me.shedaniel.linkie.namespaces.*
 import me.shedaniel.linkie.utils.*
-import java.util.Locale
+import java.util.*
+import kotlin.collections.List
+import kotlin.collections.Map
+import kotlin.collections.MutableList
+import kotlin.collections.associate
+import kotlin.collections.associateBy
+import kotlin.collections.chunked
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.contains
+import kotlin.collections.filter
+import kotlin.collections.filterValues
+import kotlin.collections.find
+import kotlin.collections.first
+import kotlin.collections.firstOrNull
+import kotlin.collections.forEach
+import kotlin.collections.getOrPut
+import kotlin.collections.joinToString
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.mapValues
+import kotlin.collections.mutableListOf
+import kotlin.collections.mutableMapOf
+import kotlin.collections.mutableSetOf
 import kotlin.collections.set
+import kotlin.collections.toList
+import kotlin.collections.toMutableList
 import kotlin.error
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectory
@@ -234,7 +257,7 @@ class MappingsExtension : Extension() {
 							)
 					)
 
-					val pagesObj = Pages()
+					val pagesObj = DefaultPages()
 					val pageTitle = MappingsTranslations.Response.Info.title
 						.withLocale(locale)
 						.translateNamed("mappings" to friendlyName)
@@ -347,7 +370,7 @@ class MappingsExtension : Extension() {
 					)
 			)
 
-			val pagesObj = Pages()
+			val pagesObj = DefaultPages()
 			val pageTitle = MappingsTranslations.Response.Info.title
 				.withLocale(locale)
 				.translateNamed("mappings" to "Mojang")
@@ -420,7 +443,7 @@ class MappingsExtension : Extension() {
 					)
 			)
 
-			val pagesObj = Pages()
+			val pagesObj = DefaultPages()
 			val pageTitle = MappingsTranslations.Response.Info.title
 				.withLocale(locale)
 				.translateNamed("mappings" to "Hashed Mojang")
@@ -534,7 +557,7 @@ class MappingsExtension : Extension() {
 					)
 			)
 
-			val pagesObj = Pages()
+			val pagesObj = DefaultPages()
 			val pageTitle = MappingsTranslations.Response.Info.title
 				.withLocale(locale)
 				.translateNamed("mappings" to "Yarn")
@@ -717,7 +740,7 @@ class MappingsExtension : Extension() {
 							enabledNamespaces.joinToString("\n") { "- `$it`" }
 					)
 
-					val pagesObj = Pages()
+					val pagesObj = DefaultPages()
 					val pageTitle = MappingsTranslations.Command.Convert.Info.title
 						.translateLocale(locale)
 
@@ -957,7 +980,7 @@ class MappingsExtension : Extension() {
 					return@withContext
 				}
 
-				val pagesObj = Pages(
+				val pagesObj = DefaultPages(
 					MappingsTranslations.Response.Query.expand
 						.withLocale(locale)
 						.withNamedPlaceholders("emoji" to EXPAND_EMOJI.mention)
@@ -1209,7 +1232,7 @@ class MappingsExtension : Extension() {
 				}
 
 				val locale = getLocale()
-				val pagesObj = Pages(EMPTY_KEY)
+				val pagesObj = DefaultPages(EMPTY_KEY)
 
 				val inputName = inputContainer.name
 				val outputName = outputContainer.name

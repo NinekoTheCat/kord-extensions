@@ -16,7 +16,7 @@ import dev.kordex.core.i18n.types.Key
  *
  * @param defaultGroup Default page group, if you have more than one.
  */
-public open class Pages(public override var defaultGroup: Key = EMPTY_KEY) : IPages<Int> {
+public open class DefaultPages(public override var defaultGroup: Key = EMPTY_KEY) : Pages<Int> {
 	public override val groups: MutableSet<Key>
 		get() = internalGroups.keys
 	private val internalGroups: LinkedHashMap<Key, MutableList<Page>> = linkedMapOf()
@@ -56,7 +56,7 @@ public open class Pages(public override var defaultGroup: Key = EMPTY_KEY) : IPa
 	}
 }
 
-public interface IPages<I> {
+public interface Pages<I> {
 	/** Retrieve the list of groups this instance has. **/
 	public val groups: Set<Key>
 

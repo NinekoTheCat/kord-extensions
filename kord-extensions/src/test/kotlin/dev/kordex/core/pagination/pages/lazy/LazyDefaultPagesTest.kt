@@ -72,7 +72,7 @@ private class LazyProviderThatCountsExecutionsAndReturnsTestPage(val pages: List
 }
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class LazyPagesTest {
+class LazyDefaultPagesTest {
 	@Test
 	@Execution(ExecutionMode.CONCURRENT)
 	fun `Can add a provider to the default group`() {

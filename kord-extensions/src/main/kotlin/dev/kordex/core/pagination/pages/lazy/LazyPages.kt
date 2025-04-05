@@ -10,15 +10,15 @@ package dev.kordex.core.pagination.pages.lazy
 
 import dev.kordex.core.i18n.EMPTY_KEY
 import dev.kordex.core.i18n.types.Key
-import dev.kordex.core.pagination.pages.IPages
 import dev.kordex.core.pagination.pages.Page
+import dev.kordex.core.pagination.pages.Pages
 
 /**
  * Class representing a set of pages generated via calls to the appropriate [LazyPageProvider].
  *
  * @param defaultGroup Default page group, if you have more than one.
  */
-public open class LazyPages(public override var defaultGroup: Key = EMPTY_KEY) : IPages<Int> {
+public open class LazyPages(public override var defaultGroup: Key = EMPTY_KEY) : Pages<Int> {
 	override val groups: Set<Key>
 		get() = providers.keys
 	private val providers: MutableMap<Key, LazyPageProviderWithSize<Int, Int>> = mutableMapOf()

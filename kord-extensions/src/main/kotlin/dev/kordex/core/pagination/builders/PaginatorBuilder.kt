@@ -13,8 +13,8 @@ import dev.kord.core.entity.ReactionEmoji
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kordex.core.i18n.EMPTY_KEY
 import dev.kordex.core.i18n.types.Key
+import dev.kordex.core.pagination.pages.DefaultPages
 import dev.kordex.core.pagination.pages.Page
-import dev.kordex.core.pagination.pages.Pages
 import java.util.*
 
 /**
@@ -28,7 +28,7 @@ public class PaginatorBuilder(
 	public val defaultGroup: Key = EMPTY_KEY,
 ) {
 	/** Pages container object. **/
-	public val pages: Pages = Pages(defaultGroup)
+	public val pages: DefaultPages = DefaultPages(defaultGroup)
 
 	/** How many "pages" should be displayed at once, from 1 to 9. **/
 	public var chunkedPages: Int = 1

@@ -14,7 +14,7 @@ import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.entity.ReactionEmoji
 import dev.kordex.core.pagination.builders.PageTransitionCallback
 import dev.kordex.core.pagination.builders.PaginatorBuilder
-import dev.kordex.core.pagination.pages.Pages
+import dev.kordex.core.pagination.pages.DefaultPages
 import java.util.*
 
 /**
@@ -23,7 +23,7 @@ import java.util.*
  * @param interaction Interaction response behaviour to work with.
  */
 public class PublicResponsePaginator(
-	pages: Pages,
+	pages: DefaultPages,
 	chunkedPages: Int = 1,
 	owner: UserBehavior? = null,
 	timeoutSeconds: Long? = null,

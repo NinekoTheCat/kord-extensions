@@ -22,8 +22,8 @@ import dev.kordex.core.i18n.generated.CoreTranslations
 import dev.kordex.core.i18n.toKey
 import dev.kordex.core.pagination.BasePaginator
 import dev.kordex.core.pagination.MessageButtonPaginator
+import dev.kordex.core.pagination.pages.DefaultPages
 import dev.kordex.core.pagination.pages.Page
-import dev.kordex.core.pagination.pages.Pages
 import dev.kordex.core.utils.deleteIgnoringNotFound
 import dev.kordex.core.utils.getLocale
 import dev.kordex.core.utils.translate
@@ -82,7 +82,7 @@ public class HelpExtension : HelpProvider, Extension() {
 		var totalCommands = 0
 		val locale = event.getLocale()
 
-		val pages = Pages(COMMANDS_GROUP)
+		val pages = DefaultPages(COMMANDS_GROUP)
 		val commandPages = gatherCommands(event)
 			.chunked(HELP_PER_PAGE)
 			.map { list ->
@@ -188,7 +188,7 @@ public class HelpExtension : HelpProvider, Extension() {
 		prefix: String,
 		command: ChatCommand<out Arguments>?,
 	): BasePaginator {
-		val pages = Pages(COMMANDS_GROUP)
+		val pages = DefaultPages(COMMANDS_GROUP)
 		val locale = event.getLocale()
 
 		if (command == null || !command.runChecks(event, false, mutableMapOf())) {

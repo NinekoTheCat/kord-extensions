@@ -19,8 +19,8 @@ import dev.kordex.core.ExtensibleBot
 import dev.kordex.core.i18n.types.Key
 import dev.kordex.core.koin.KordExKoinComponent
 import dev.kordex.core.pagination.builders.PageTransitionCallback
-import dev.kordex.core.pagination.pages.IPages
 import dev.kordex.core.pagination.pages.Page
+import dev.kordex.core.pagination.pages.Pages
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.component.inject
@@ -64,7 +64,7 @@ public val EXPAND_EMOJI: ReactionEmoji.Unicode = ReactionEmoji.Unicode("\u2139\u
  * @param locale A Locale object for this pagination context, which defaults to the bot's default locale
  */
 public abstract class BasePaginator(
-	public val pages: IPages<Int>,
+	public val pages: Pages<Int>,
 	public open val chunkedPages: Int = 1,
 	public open val owner: UserBehavior? = null,
 	public open val timeoutSeconds: Long? = null,
