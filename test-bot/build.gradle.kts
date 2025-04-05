@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 buildscript {
 	repositories {
 		maven {
@@ -59,7 +57,7 @@ dependencies {
 	implementation(project(":modules:integrations:pluralkit"))
 
 	implementation(project(":modules:web:web-core:web-backend"))
-
+	detektPlugins(project(":modules:dev:dev-detekt-rules"))
 	detektPlugins(libs.detekt)
 	detektPlugins(libs.detekt.libraries)
 

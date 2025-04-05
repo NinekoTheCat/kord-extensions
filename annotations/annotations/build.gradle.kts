@@ -11,6 +11,7 @@ metadata {
 dependencies {
 	implementation(libs.kotlin.stdlib)
 
+	detektPlugins(project(":modules:dev:dev-detekt-rules"))
 	detektPlugins(libs.detekt)
 	detektPlugins(libs.detekt.libraries)
 }

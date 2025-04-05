@@ -17,6 +17,7 @@ dependencies {
 
 	implementation(project(":annotations:annotations"))
 
+	detektPlugins(project(":modules:dev:dev-detekt-rules"))
 	detektPlugins(libs.detekt)
 	detektPlugins(libs.detekt.libraries)
 }

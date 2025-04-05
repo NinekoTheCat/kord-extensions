@@ -10,6 +10,7 @@ functionality.
   - `dev-time4j` - Duration converter that uses the Time4J library, for bots that need to integrate with it.
   - `dev-unsafe` - Provides "unsafe" variants of interaction-based types (such as slash commands) that allow you to handle
     the interaction yourself if you need to.
+  - `dev-detekt-rules` - Custom detekt rules that enforce library conventions.
 - `functionality/` - Modules providing user-facing bot functionality.
   - `func-mappings` - Minecraft mappings lookup extension, powered by Linkie Core.
     - **This has been [temporarily relocated](https://github.com/Kord-Extensions/temp-mappings) while we

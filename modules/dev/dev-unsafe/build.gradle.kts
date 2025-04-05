@@ -15,6 +15,7 @@ dependencies {
 	implementation(libs.kotlin.stdlib)
 	implementation(project(":kord-extensions"))
 
+	detektPlugins(project(":modules:dev:dev-detekt-rules"))
 	detektPlugins(libs.detekt)
 	detektPlugins(libs.detekt.libraries)
 

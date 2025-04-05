@@ -13,6 +13,7 @@ dependencies {
 	implementation(libs.kotlin.stdlib)
 	implementation(libs.bundles.logging) // Basic logging setup
 
+	detektPlugins(project(":modules:dev:dev-detekt-rules"))
 	detektPlugins(libs.detekt)
 	detektPlugins(libs.detekt.libraries)
 

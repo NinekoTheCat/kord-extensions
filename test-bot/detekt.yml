@@ -666,3 +666,7 @@ libraries:
     active: true
   LibraryEntitiesShouldNotBePublic:
     active: false
+# Kord specific detekt extensions.
+kord-extensions:
+  InterfaceNameCannotBePrefixedWithI:
+    active: true

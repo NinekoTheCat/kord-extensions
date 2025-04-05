@@ -40,6 +40,7 @@ dependencies {
 	api(project(":annotations:annotations"))
 	api(project(":token-parser"))
 
+	detektPlugins(project(":modules:dev:dev-detekt-rules"))
 	detektPlugins(libs.detekt)
 	detektPlugins(libs.detekt.libraries)
 

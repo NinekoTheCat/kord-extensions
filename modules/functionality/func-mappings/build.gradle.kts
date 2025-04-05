@@ -53,7 +53,7 @@ dependencies {
 	api(libs.linkie) {
 		exclude("ch.qos.logback", "logback-classic")
 	}
-
+	detektPlugins(project(":modules:dev:dev-detekt-rules"))
 	detektPlugins(libs.detekt)
 	detektPlugins(libs.detekt.libraries)
 

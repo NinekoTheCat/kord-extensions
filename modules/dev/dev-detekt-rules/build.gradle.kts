@@ -1,38 +1,32 @@
 plugins {
 	`kordex-module`
 	`published-module`
-	`ksp-module`
-
-	kotlin("plugin.serialization")
 }
 
 group = "dev.kordex.modules"
 
 metadata {
-	name = "KordEx: Java Time"
-	description = "KordEx module that provides converters that support Java Time"
+	name = "KordEx: Detekt Rules"
+	description = "KordEx module that provides extra custom detekt rules "
 }
 
 dependencies {
 	implementation(libs.kotlin.stdlib)
-
 	implementation(project(":kord-extensions"))
-	implementation(project(":annotations:annotations"))
 
-	ksp(project(":annotations:annotation-processor"))
+	compileOnly(libs.detekt.api)
+	compileOnly(libs.detekt.psi.utils)
 
 	detektPlugins(project(":modules:dev:dev-detekt-rules"))
 	detektPlugins(libs.detekt)
 	detektPlugins(libs.detekt.libraries)
-
+	testImplementation(libs.kotest.assertions.core)
 	testImplementation(libs.groovy)  // For logback config
-	testImplementation(libs.jansi)
 	testImplementation(libs.junit)
 	testImplementation(libs.logback)
-	testImplementation(libs.logback.groovy)
+	testImplementation(libs.detekt.test)
 }
 
 dokkaModule {
-	moduleName.set("Kord Extensions: Java Time")
+	moduleName.set("KordEx: Detekt Rules")
 }
-
