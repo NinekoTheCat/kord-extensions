@@ -16,7 +16,13 @@ import dev.kordex.core.i18n.types.Key
  *
  * @param defaultGroup Default page group, if you have more than one.
  */
-public open class DefaultPages(public override var defaultGroup: Key = EMPTY_KEY) : Pages<Int> {
+public open class DefaultPages(public override var defaultGroup: Key = EMPTY_KEY) : MutablePages<Int> {
+	override fun set(group: Key, page: Page) {
+		internalGroups[group] = internalGroups[group] ?: mutableListOf()
+
+		internalGroups[group]!!.add(page)
+	}
+
 	public override val groups: MutableSet<Key>
 		get() = internalGroups.keys
 	private val internalGroups: LinkedHashMap<Key, MutableList<Page>> = linkedMapOf()
@@ -25,13 +31,6 @@ public open class DefaultPages(public override var defaultGroup: Key = EMPTY_KEY
 		internalGroups.isEmpty() || internalGroups.any { it.value.isEmpty() }
 
 	override fun pageCountForGroup(group: Key): Int = internalGroups[group]!!.size
-	public open fun addPage(page: Page): Unit = addPage(defaultGroup, page)
-
-	public open fun addPage(group: Key, page: Page) {
-		internalGroups[group] = internalGroups[group] ?: mutableListOf()
-
-		internalGroups[group]!!.add(page)
-	}
 
 	public override fun get(page: Int): Page = get(defaultGroup, page)
 
@@ -80,4 +79,8 @@ public interface Pages<I> {
 
 	/** Check that this Pages object is valid, throwing if it isn't. **/
 	public fun validate()
+}
+
+public interface MutablePages<I> : Pages<I> {
+	public operator fun set(group: Key, page: Page)
 }

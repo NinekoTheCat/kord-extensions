@@ -14,7 +14,9 @@ import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kordex.core.i18n.EMPTY_KEY
 import dev.kordex.core.i18n.types.Key
 import dev.kordex.core.pagination.pages.DefaultPages
+import dev.kordex.core.pagination.pages.MutablePages
 import dev.kordex.core.pagination.pages.Page
+import dev.kordex.core.pagination.pages.Pages
 import java.util.*
 
 /**
@@ -27,8 +29,11 @@ public class PaginatorBuilder(
 	public var locale: Locale? = null,
 	public val defaultGroup: Key = EMPTY_KEY,
 ) {
+	// default pages implements Pages<Int>
+	// so this is always safe
 	/** Pages container object. **/
-	public val pages: DefaultPages = DefaultPages(defaultGroup)
+	@Suppress("UNCHECKED_CAST")
+	public val pages: Pages<Page> = DefaultPages(defaultGroup) as Pages<Page>
 
 	/** How many "pages" should be displayed at once, from 1 to 9. **/
 	public var chunkedPages: Int = 1
@@ -48,19 +53,40 @@ public class PaginatorBuilder(
 	/** Object containing paginator mutation functions. **/
 	public var mutator: PageTransitionCallback? = null
 
-	/** Add a page to [pages], using the default group. **/
-	public fun page(page: Page): Unit = pages.addPage(page)
+	/** Add a page to [pages], using the default group.
+	 * @throws UnsupportedOperationException if [pages] doesn't implement [MutablePages]
+	 * **/
+	public fun page(page: Page) {
+		page(defaultGroup, page)
+		if (pages is MutablePages) {
+			pages[defaultGroup] = page
+		}
+	}
 
-	/** Add a page to [pages], using the given group. **/
-	public fun page(group: Key, page: Page): Unit = pages.addPage(group, page)
+	/** Add a page to [pages], using the given group.
+	 * @throws UnsupportedOperationException if [pages] doesn't implement [MutablePages]
+	 * **/
+	public fun page(group: Key, page: Page) {
+		if (pages is MutablePages) {
+			pages[group] = page
+		} else {
+			throw UnsupportedOperationException(
+				"pages type of ${pages::class.qualifiedName} does not implement MutablePages<Int>"
+			)
+		}
+	}
 
-	/** Add a page to [pages], using the default group. **/
+	/** Add a page to [pages], using the default group.
+	 * @throws UnsupportedOperationException if [pages] doesn't implement [MutablePages]
+	 * **/
 	public fun page(
 		builder: suspend EmbedBuilder.() -> Unit,
 	): Unit =
 		page(Page(builder = builder))
 
-	/** Add a page to [pages], using the given group. **/
+	/** Add a page to [pages], using the given group.
+	 * @throws UnsupportedOperationException if [pages] doesn't implement [MutablePages]
+	 * **/
 	public fun page(
 		group: Key,
 		builder: suspend EmbedBuilder.() -> Unit,
