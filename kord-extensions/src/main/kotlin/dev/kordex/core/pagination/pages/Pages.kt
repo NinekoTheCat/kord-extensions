@@ -16,44 +16,68 @@ import dev.kordex.core.i18n.types.Key
  *
  * @param defaultGroup Default page group, if you have more than one.
  */
-public open class Pages(public open var defaultGroup: Key = EMPTY_KEY) {
-	/** All groups of pages stored in this class. **/
-	public open val groups: LinkedHashMap<Key, MutableList<Page>> = linkedMapOf()
+public open class Pages(public override var defaultGroup: Key = EMPTY_KEY) : IPages<Int> {
+	public override val groups: MutableSet<Key>
+		get() = internalGroups.keys
+	private val internalGroups: LinkedHashMap<Key, MutableList<Page>> = linkedMapOf()
 
-	/** Add a page to the default group. **/
+	override fun isEmpty(): Boolean =
+		internalGroups.isEmpty() || internalGroups.any { it.value.isEmpty() }
+
+	override fun pageCountForGroup(group: Key): Int = internalGroups[group]!!.size
 	public open fun addPage(page: Page): Unit = addPage(defaultGroup, page)
 
-	/** Add a page to a given group. **/
 	public open fun addPage(group: Key, page: Page) {
-		groups[group] = groups[group] ?: mutableListOf()
+		internalGroups[group] = internalGroups[group] ?: mutableListOf()
 
-		groups[group]!!.add(page)
+		internalGroups[group]!!.add(page)
 	}
 
-	/** Retrieve the page at the given index, from the default group. **/
-	public open fun get(page: Int): Page = get(defaultGroup, page)
+	public override fun get(page: Int): Page = get(defaultGroup, page)
 
-	/** Retrieve the page at the given index, from a given group. **/
-	public open fun get(group: Key, page: Int): Page {
-		if (groups[group] == null) {
+	public override fun get(group: Key, page: Int): Page {
+		if (internalGroups[group] == null) {
 			throw NoSuchElementException("No such group: $group")
 		}
 
-		val size = groups[group]!!.size
+		val size = internalGroups[group]!!.size
 
 		if (page > size) {
 			throw IndexOutOfBoundsException("Page out of range: $page ($size pages)")
 		}
 
-		return groups[group]!![page]
+		return internalGroups[group]!![page]
 	}
 
-	/** Check that this Pages object is valid, throwing if it isn't.. **/
-	public open fun validate() {
-		if (groups.isEmpty()) {
-			throw IllegalArgumentException(
+	public override fun validate() {
+		require(groups.isNotEmpty()) {
 				"Invalid pages supplied: At least one page is required"
-			)
 		}
 	}
+}
+
+public interface IPages<I> {
+	/** Retrieve the list of groups this instance has. **/
+	public val groups: Set<Key>
+
+	public val defaultGroup: Key
+
+	/**
+	 * @return `true` if there are no pages.
+	 */
+	public fun isEmpty(): Boolean
+
+	/**
+	 * @return count of pages for [group].
+	 */
+	public fun pageCountForGroup(group: Key): Int
+
+	/** Retrieve the page at the given index, from the default group. **/
+	public operator fun get(page: I): Page
+
+	/** Retrieve the page at the given index, from a given group. **/
+	public operator fun get(group: Key, page: I): Page
+
+	/** Check that this Pages object is valid, throwing if it isn't. **/
+	public fun validate()
 }

@@ -23,7 +23,6 @@ import dev.kordex.core.i18n.generated.CoreTranslations
 import dev.kordex.core.i18n.types.Key
 import dev.kordex.core.pagination.builders.PageTransitionCallback
 import dev.kordex.core.pagination.pages.Pages
-import dev.kordex.core.utils.capitalizeWords
 import dev.kordex.core.utils.scheduling.Scheduler
 import dev.kordex.core.utils.scheduling.Task
 import kotlinx.coroutines.runBlocking
@@ -112,12 +111,12 @@ public abstract class BaseButtonPaginator(
 			error("You may only have up to 9 chunked pages per message.")
 		}
 
-		if (pages.groups.values.any { it.size > 1 }) {
+		if (pages.groups.size > 1) {
 			// Add navigation buttons...
 			firstPageButton = components.publicButton {
 				deferredAck = true
 				style = ButtonStyle.Secondary
-				disabled = pages.groups[currentGroup]!!.size <= 1
+				disabled = pages.pageCountForGroup(currentGroup) <= 1
 
 				check(defaultCheck)
 
@@ -134,7 +133,7 @@ public abstract class BaseButtonPaginator(
 			backButton = components.publicButton {
 				deferredAck = true
 				style = ButtonStyle.Secondary
-				disabled = pages.groups[currentGroup]!!.size <= 1
+				disabled = pages.pageCountForGroup(currentGroup) <= 1
 
 				check(defaultCheck)
 
@@ -151,7 +150,7 @@ public abstract class BaseButtonPaginator(
 			nextButton = components.publicButton {
 				deferredAck = true
 				style = ButtonStyle.Secondary
-				disabled = pages.groups[currentGroup]!!.size <= chunkedPages
+				disabled = pages.pageCountForGroup(currentGroup) <= chunkedPages
 
 				check(defaultCheck)
 
@@ -168,7 +167,7 @@ public abstract class BaseButtonPaginator(
 			lastPageButton = components.publicButton {
 				deferredAck = true
 				style = ButtonStyle.Secondary
-				disabled = pages.groups[currentGroup]!!.size <= chunkedPages
+				disabled = pages.pageCountForGroup(currentGroup) <= chunkedPages
 
 				check(defaultCheck)
 
@@ -178,7 +177,7 @@ public abstract class BaseButtonPaginator(
 					// This is a mess, but I'm not great at math.
 					goToPage(
 						ceil(
-							pages.groups[currentGroup]!!.size.div(chunkedPages.toFloat())
+							pages.pageCountForGroup(currentGroup).div(chunkedPages.toFloat())
 						)
 							.roundToInt()
 							.times(chunkedPages)
@@ -191,7 +190,7 @@ public abstract class BaseButtonPaginator(
 			}
 		}
 
-		if (pages.groups.values.any { it.size > 1 } || !keepEmbed) {
+		if (pages.groups.map { pages.pageCountForGroup(it) }.any { it > 1 } || !keepEmbed) {
 			// Add the destroy button
 			components.publicButton(lastRowNumber) {
 				deferredAck = true
@@ -281,7 +280,7 @@ public abstract class BaseButtonPaginator(
 		}
 
 		// To avoid out-of-bounds
-		currentPageNum = minOf(currentPageNum, pages.groups[group]!!.size)
+		currentPageNum = minOf(currentPageNum, pages.pageCountForGroup(group))
 		currentPages = getChunk()
 		currentGroup = group
 
@@ -308,7 +307,7 @@ public abstract class BaseButtonPaginator(
 			return
 		}
 
-		if (page < 0 || page > pages.groups[currentGroup]!!.size - 1) {
+		if (page < 0 || page > pages.pageCountForGroup(currentGroup) - 1) {
 			logger.debug { "Page number $page is too high!" }
 
 			return
@@ -332,7 +331,7 @@ public abstract class BaseButtonPaginator(
 			setEnabledButton(backButton)
 		}
 
-		if (currentPageNum + chunkedPages > pages.groups[currentGroup]!!.size - 1) {
+		if (currentPageNum + chunkedPages > pages.pageCountForGroup(currentGroup) - 1) {
 			setDisabledButton(nextButton)
 			setDisabledButton(lastPageButton)
 		} else {

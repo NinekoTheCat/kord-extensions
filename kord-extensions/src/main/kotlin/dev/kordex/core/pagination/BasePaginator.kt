@@ -19,8 +19,8 @@ import dev.kordex.core.ExtensibleBot
 import dev.kordex.core.i18n.types.Key
 import dev.kordex.core.koin.KordExKoinComponent
 import dev.kordex.core.pagination.builders.PageTransitionCallback
+import dev.kordex.core.pagination.pages.IPages
 import dev.kordex.core.pagination.pages.Page
-import dev.kordex.core.pagination.pages.Pages
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.component.inject
@@ -64,7 +64,7 @@ public val EXPAND_EMOJI: ReactionEmoji.Unicode = ReactionEmoji.Unicode("\u2139\u
  * @param locale A Locale object for this pagination context, which defaults to the bot's default locale
  */
 public abstract class BasePaginator(
-	public open val pages: Pages,
+	public val pages: IPages<Int>,
 	public open val chunkedPages: Int = 1,
 	public open val owner: UserBehavior? = null,
 	public open val timeoutSeconds: Long? = null,
@@ -98,10 +98,10 @@ public abstract class BasePaginator(
 	public open var active: Boolean = true
 
 	/** Set of all page groups. **/
-	public open var allGroups: List<Key> = pages.groups.map { it.key }
+	public open var allGroups: List<Key> = pages.groups.toList()
 
 	init {
-		if (pages.groups.filterValues { it.isNotEmpty() }.isEmpty()) {
+		if (pages.isEmpty()) {
 			error("Attempted to send a paginator with no pages in it")
 		}
 	}
@@ -109,18 +109,22 @@ public abstract class BasePaginator(
 	/** Currently-displayed page object. **/
 	public open var currentPages: List<Page> = getChunk()
 
-	public open fun getChunk(): List<Page> {
+	public fun getChunk(): List<Page> {
 		val result: MutableList<Page> = mutableListOf()
 
 		for (pageNum in currentPageNum until currentPageNum + chunkedPages) {
+			var endLoop = false
 			@Suppress("TooGenericExceptionCaught")
 			try {
-				val page = pages.get(currentGroup, pageNum)
+				val page = pages[currentGroup, pageNum]
 
 				result.add(page)
 			} catch (_: NoSuchElementException) {
-				break
+				endLoop = true
 			} catch (_: IndexOutOfBoundsException) {
+				endLoop = true
+			}
+			if (endLoop) {
 				break
 			}
 		}
@@ -144,7 +148,7 @@ public abstract class BasePaginator(
 					locale = localeObj,
 					pageNum = currentPageNum,
 					chunkSize = chunkedPages,
-					pages = pages.groups[currentGroup]!!.size,
+					pages = pages.pageCountForGroup(currentGroup),
 					group = groupEmoji,
 					groupIndex = allGroups.indexOf(currentGroup),
 					groups = allGroups.size,
@@ -165,7 +169,7 @@ public abstract class BasePaginator(
 				localeObj,
 				currentPageNum,
 				chunkedPages,
-				pages.groups[currentGroup]!!.size,
+				pages.pageCountForGroup(currentGroup),
 				groupEmoji,
 				allGroups.indexOf(currentGroup),
 				allGroups.size,
@@ -199,12 +203,12 @@ public abstract class BasePaginator(
 	/** Switch to a specific page. Should not call [send]. **/
 	public abstract suspend fun goToPage(page: Int)
 
-	/** Destroy this paginator, removing its buttons and deleting its message if required.. **/
+	/** Destroy this paginator, removing its buttons and deleting its message if required. **/
 	public abstract suspend fun destroy()
 
 	/** Convenience function to go to call [goToPage] with the next page number, if we're not at the last page. **/
 	public open suspend fun nextPage() {
-		if (currentPageNum < pages.groups[currentGroup]!!.size - 1) {
+		if (currentPageNum < pages.pageCountForGroup(currentGroup) - 1) {
 			goToPage(currentPageNum + chunkedPages)
 		}
 	}
