@@ -17,10 +17,10 @@ import dev.kord.rest.builder.message.create.FollowupMessageCreateBuilder
 import dev.kord.rest.builder.message.modify.InteractionResponseModifyBuilder
 import dev.kordex.core.annotations.AlwaysPublicResponse
 import dev.kordex.core.annotations.UnexpectedFunctionBehaviour
-import dev.kordex.core.i18n.EMPTY_KEY
-import dev.kordex.core.i18n.types.Key
 import dev.kordex.core.pagination.BaseButtonPaginator
 import dev.kordex.core.pagination.builders.PaginatorBuilder
+import dev.kordex.core.pagination.group.Group
+import dev.kordex.core.pagination.group.emptyGroup
 import java.util.*
 
 /** Type alias for a generic interaction context, meant to be used with extension functions. **/
@@ -50,7 +50,7 @@ public interface InteractionContext<
 
 	/** Create a paginator that edits the original interaction response. **/
 	public fun editingPaginator(
-		defaultGroup: Key = EMPTY_KEY,
+		defaultGroup: Group = emptyGroup,
 		locale: Locale? = null,
 		builder: (PaginatorBuilder).() -> Unit,
 	): BaseButtonPaginator
@@ -62,7 +62,7 @@ public interface InteractionContext<
 	 */
 	@AlwaysPublicResponse
 	public suspend fun respondingPaginator(
-		defaultGroup: Key = EMPTY_KEY,
+		defaultGroup: Group = emptyGroup,
 		locale: Locale? = null,
 		builder: suspend (PaginatorBuilder).() -> Unit,
 	): BaseButtonPaginator

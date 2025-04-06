@@ -11,9 +11,9 @@ package dev.kordex.core.pagination.pages
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kordex.core.ExtensibleBot
 import dev.kordex.core.i18n.generated.CoreTranslations
-import dev.kordex.core.i18n.types.Key
 import dev.kordex.core.koin.KordExKoinComponent
 import dev.kordex.core.pagination.builders.PageMutator
+import dev.kordex.core.pagination.group.Group
 import dev.kordex.core.utils.capitalizeWords
 import dev.kordex.core.utils.textOrNull
 import org.koin.core.component.inject
@@ -34,15 +34,6 @@ public open class Page(
 
 	/** Create an embed builder for this page. **/
 	public open suspend fun build(
-		locale: Locale,
-		pageNum: Int,
-		chunkSize: Int,
-		pages: Int,
-		group: Key?,
-		groupIndex: Int,
-		groups: Int,
-		shouldMutateFooter: Boolean = true,
-		shouldPutFooterInDescription: Boolean = false,
 		mutator: PageMutator? = null,
 	): suspend EmbedBuilder.() -> Unit = {
 		builder()
@@ -50,78 +41,131 @@ public open class Page(
 		if (mutator != null) {
 			mutator(this, this@Page)
 		}
+	}
 
-		if (shouldMutateFooter) {
-			val curFooterText = footer?.textOrNull()
+	private fun StringBuilder.addPageNumberToFooter(
+		chunkSettings: FooterPageNumberSettings,
+		locale: Locale,
+	) = append(
+		if (chunkSettings.isChunked)
+			CoreTranslations.Paginator.Footer.Page.chunked
+				.withLocale(locale)
+				.translate(
+					chunkSettings.currentNonChunkedPage,
+					chunkSettings.totalNonChunkedPages,
+					chunkSettings.totalChunks,
+				)
+		else CoreTranslations.Paginator.Footer.page
+			.withLocale(locale)
+			.translate(
+				chunkSettings.pageNum + 1,
+				chunkSettings.totalChunks
+			)
+	)
 
-			val footerText = buildString {
-				if (pages > 1) {
-					if (chunkSize > 1) {
-						append(
-							CoreTranslations.Paginator.Footer.Page.chunked
-								.withLocale(locale)
-								.translate(
-									ceil((pageNum + 1).div(chunkSize.toFloat())).roundToInt(), // Current page
-									ceil(pages.div(chunkSize.toFloat())).roundToInt(), // Total pages
-									pages, // Total chunks
-								)
-						)
-					} else {
-						append(
-							CoreTranslations.Paginator.Footer.page
-								.withLocale(locale)
-								.translate(
-									pageNum + 1,
-									pages
-								)
-						)
-					}
-				}
+	public data class FooterPageNumberSettings(
+		public val totalChunks: Int,
+		public val chunkSize: Int,
+		public val pageNum: Int,
+	) {
+		public val isChunked: Boolean = chunkSize > 1
+		private val chunkSizeFloat: Float = chunkSize.toFloat()
 
-				if (group != null || groups > 2) {
-					if (isNotBlank()) {
+		public val totalNonChunkedPages: Int
+			get() = ceil(totalChunks.div(chunkSizeFloat)).roundToInt()
+		public val currentNonChunkedPage: Int
+			get() = ceil((pageNum + 1).div(chunkSizeFloat)).roundToInt()
+
+
+		public fun shouldAddFooter(): Boolean = totalChunks > 1
+	}
+
+	@Suppress("LongParameterList")
+	/**
+	 * adds a footer to the embed
+	 * @param footerPageNumberSettings these are the settings for the page number footer,
+	 * set to `null` to remove the page numbers entirely
+	 * @param builder the embed builder to configure with the footer
+	 * @param locale the locale to translate the keys in
+	 * @param group the group that the page was assigned to
+	 * @param groups the total set of all groups
+	 * @param shouldPutFooterInDescription set to true if you want a footer in the [EmbedBuilder.description] and not the
+	 * [EmbedBuilder.footer] field
+	 */
+	public open fun pageFooter(
+		builder: EmbedBuilder,
+		footerPageNumberSettings: FooterPageNumberSettings? = null,
+		locale: Locale,
+		group: Group?,
+		groups: Collection<Group>,
+		shouldPutFooterInDescription: Boolean = false,
+	): Unit = builder.run {
+		val footerText = buildString {
+			if (footerPageNumberSettings?.shouldAddFooter() == true)
+				addPageNumberToFooter(footerPageNumberSettings, locale)
+			footerText(
+				locale,
+				group,
+				groups
+			)
+			val currentFooterText = builder.footer?.textOrNull()
+
+			if (currentFooterText?.isEmpty() == true) {
+				if (isNotBlank())
 						append(" • ")
-					}
 
-					if (group == null || group.key.isBlank()) {
-						append(
-							CoreTranslations.Paginator.Footer.group
-								.withLocale(locale)
-								.translate(
-									groupIndex + 1,
-									groups
-								)
-						)
-					} else {
-						val groupName = group
-							.withLocale(locale)
-							.translate()
-							.capitalizeWords(locale)
 
-						append("$groupName (${groupIndex + 1}/$groups)")
-					}
-				}
-
-				if (!curFooterText.isNullOrEmpty()) {
-					if (isNotBlank()) {
-						append(" • ")
-					}
-
-					append(curFooterText)
-				}
+				append(currentFooterText)
 			}
+		}
 
-			if (shouldPutFooterInDescription) {
-				description = footerText
-			} else {
-				val curFooterIcon = footer?.icon
+		if (shouldPutFooterInDescription) {
+			description = footerText
+		} else {
+			val currentFooterIcon = footer?.icon
 
-				footer {
-					icon = curFooterIcon
+			footer {
+				icon = currentFooterIcon
 
-					text = footerText
-				}
+				text = footerText
 			}
 		}
 	}
+
+
+	private fun StringBuilder.footerText(
+		locale: Locale,
+		group: Group?,
+		groups: Collection<Group>,
+	) {
+		val groupsSize = groups.size
+		val groupIndex = groups.indexOf(group)
+
+		if (group != null || groupsSize > 2) {
+			if (isNotBlank())
+				append(" • ")
+
+
+			if (group == null || group.displayName.key.isBlank()) {
+				append(
+					CoreTranslations.Paginator.Footer.group
+						.withLocale(locale)
+						.translate(
+							groupIndex + 1,
+							groupsSize
+						)
+				)
+			} else {
+				val groupName = group.displayName
+					.withLocale(locale)
+					.translate()
+					.capitalizeWords(locale)
+
+				append("$groupName (${groupIndex + 1}/${groupsSize})")
+			}
+		}
+
+	}
 }
+
+

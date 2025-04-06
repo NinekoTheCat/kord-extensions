@@ -9,6 +9,7 @@
 package dev.kordex.core.pagination.pages.lazy
 
 import dev.kordex.core.i18n.toKey
+import dev.kordex.core.pagination.group.toGroup
 import dev.kordex.core.pagination.pages.Page
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -48,7 +49,7 @@ fun getTestingPageList(length: Int = 4): MutableList<Page> {
 }
 
 private class LazyProviderThatCountsExecutionsAndReturnsTestPage(val pages: List<Page> = getTestingPageList()) :
-	LazyPageProviderWithSize<Int, Int> {
+	LazyPageProviderWithSize<Int> {
 	var getExecutions = 0u
 	var pageCountExecutions = 0u
 	override fun get(page: Int): Page {
@@ -76,7 +77,7 @@ class LazyDefaultPagesTest {
 	@Test
 	@Execution(ExecutionMode.CONCURRENT)
 	fun `Can add a provider to the default group`() {
-		val lazy = LazyPages()
+		val lazy = DefaultLazyPages()
 		val provider = LazyProviderThatCountsExecutionsAndReturnsTestPage()
 		lazy.addProvider(provider)
 		provider.assertIWasNotCalled()
@@ -85,22 +86,22 @@ class LazyDefaultPagesTest {
 	@Test
 	@Execution(ExecutionMode.CONCURRENT)
 	fun `Can add a provider to a custom group`() {
-		val lazy = LazyPages()
+		val lazy = DefaultLazyPages()
 		val provider = LazyProviderThatCountsExecutionsAndReturnsTestPage()
-		lazy.addProvider(provider, "TEST".toKey())
+		lazy.addProvider(provider, "TEST".toKey().toGroup())
 		provider.assertIWasNotCalled()
 	}
 
 	@Test
 	@Execution(ExecutionMode.CONCURRENT)
 	fun `Can add a provider to the default group and it'll execute the default one`() {
-		val lazy = LazyPages()
+		val lazy = DefaultLazyPages()
 		val badProvider = LazyProviderThatCountsExecutionsAndReturnsTestPage()
 		val provider = LazyProviderThatCountsExecutionsAndReturnsTestPage()
 		lazy.addProvider(provider)
-		lazy.addProvider(badProvider, "TEST".toKey())
+		lazy.addProvider(badProvider, "TEST".toKey().toGroup())
 		assertDoesNotThrow {
-			lazy[1]
+			lazy[lazy.defaultGroup, 1]
 		}
 		badProvider.assertIWasNotCalled()
 		provider.assertPageCountWasNotCalled()
@@ -110,10 +111,10 @@ class LazyDefaultPagesTest {
 	@Test
 	@Execution(ExecutionMode.CONCURRENT)
 	fun `Can add a provider to the custom group and it'll execute the right one`() {
-		val lazy = LazyPages()
+		val lazy = DefaultLazyPages()
 		val provider = LazyProviderThatCountsExecutionsAndReturnsTestPage()
 		val badProvider = LazyProviderThatCountsExecutionsAndReturnsTestPage()
-		val group = "TEST".toKey()
+		val group = "TEST".toKey().toGroup()
 		lazy.addProvider(badProvider)
 		lazy.addProvider(provider, group)
 		assertDoesNotThrow {
@@ -127,20 +128,20 @@ class LazyDefaultPagesTest {
 	@Test
 	@Execution(ExecutionMode.CONCURRENT)
 	fun `Can get a page from a provider`() {
-		val lazy = LazyPages()
+		val lazy = DefaultLazyPages()
 		val provider = LazyProviderThatCountsExecutionsAndReturnsTestPage(
 			getTestingPageList(10)
 		)
 		val idx = (0 until 10).random()
 		val page = provider[idx]
 		lazy.addProvider(provider)
-		assertEquals(lazy[idx], page)
+		assertEquals(lazy[lazy.defaultGroup, idx], page)
 	}
 
 	@Test
 	@Execution(ExecutionMode.CONCURRENT)
 	fun `Can get a pages from a provider without the order changing`() {
-		val lazy = LazyPages()
+		val lazy = CountableLazyPages()
 		val list = getTestingPageList(length = (10..23).random())
 		val provider = LazyProviderThatCountsExecutionsAndReturnsTestPage(
 			list.toList()
@@ -148,7 +149,7 @@ class LazyDefaultPagesTest {
 		lazy.addProvider(provider)
 		val newList = mutableListOf<Page>()
 		for (i in 0 until lazy.pageCountForGroup(lazy.defaultGroup)) {
-			newList.add(lazy[i])
+			newList.add(lazy[lazy.defaultGroup, i])
 		}
 		assertContentEquals(list, newList)
 	}
@@ -156,10 +157,10 @@ class LazyDefaultPagesTest {
 	@Test
 	@Execution(ExecutionMode.CONCURRENT)
 	fun `Can set default group and get right provider for that group`() {
-		val lazy = LazyPages()
+		val lazy = DefaultLazyPages()
 		val provider = LazyProviderThatCountsExecutionsAndReturnsTestPage()
 		val badProvider = LazyProviderThatCountsExecutionsAndReturnsTestPage()
-		val group = "TEST".toKey()
+		val group = "TEST".toKey().toGroup()
 		lazy.addProvider(badProvider)
 		lazy.addProvider(provider, group)
 		lazy.defaultGroup = group

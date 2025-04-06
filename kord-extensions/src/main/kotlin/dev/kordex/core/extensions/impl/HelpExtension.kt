@@ -12,7 +12,11 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kordex.core.builders.ExtensibleBotBuilder
 import dev.kordex.core.builders.extensions.HelpExtensionBuilder
 import dev.kordex.core.commands.Arguments
-import dev.kordex.core.commands.chat.*
+import dev.kordex.core.commands.chat.ChatCommand
+import dev.kordex.core.commands.chat.ChatCommandContext
+import dev.kordex.core.commands.chat.ChatCommandRegistry
+import dev.kordex.core.commands.chat.ChatGroupCommand
+import dev.kordex.core.commands.chat.ChatSubCommand
 import dev.kordex.core.commands.converters.impl.stringList
 import dev.kordex.core.extensions.Extension
 import dev.kordex.core.extensions.base.HelpProvider
@@ -22,8 +26,10 @@ import dev.kordex.core.i18n.generated.CoreTranslations
 import dev.kordex.core.i18n.toKey
 import dev.kordex.core.pagination.BasePaginator
 import dev.kordex.core.pagination.MessageButtonPaginator
+import dev.kordex.core.pagination.group.toGroup
 import dev.kordex.core.pagination.pages.DefaultPages
 import dev.kordex.core.pagination.pages.Page
+import dev.kordex.core.pagination.pages.addPage
 import dev.kordex.core.utils.deleteIgnoringNotFound
 import dev.kordex.core.utils.getLocale
 import dev.kordex.core.utils.translate
@@ -35,8 +41,8 @@ private val logger = KotlinLogging.logger {}
 /** Number of commands to show per page. */
 public const val HELP_PER_PAGE: Int = 4
 
-private val COMMANDS_GROUP = EMPTY_KEY
-private val ARGUMENTS_GROUP = "Arguments".toKey()  // TODO: This needs translating
+private val COMMANDS_GROUP = EMPTY_KEY.toGroup()
+private val ARGUMENTS_GROUP = "Arguments".toKey().toGroup()  // TODO: This needs translating
 
 /**
  * Help command extension.
@@ -410,11 +416,11 @@ public class HelpExtension : HelpProvider, Extension() {
 		if (command?.runChecks(event, false, mutableMapOf()) == false) {
 			return null
 		}
-
 		args.drop(1).forEach {
-			if (command is ChatGroupCommand<out Arguments>) {
-				command = if (command.runChecks(event, false, mutableMapOf())) {
-					command.getCommand(it, event)
+			val oldCommand = command
+			if (oldCommand is ChatGroupCommand<out Arguments>) {
+				command = if (oldCommand.runChecks(event, false, mutableMapOf())) {
+					oldCommand.getCommand(it, event)
 				} else {
 					null
 				}

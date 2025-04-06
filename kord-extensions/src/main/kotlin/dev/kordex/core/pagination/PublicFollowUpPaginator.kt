@@ -16,7 +16,7 @@ import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.entity.interaction.followup.PublicFollowupMessage
 import dev.kordex.core.pagination.builders.PageTransitionCallback
 import dev.kordex.core.pagination.builders.PaginatorBuilder
-import dev.kordex.core.pagination.pages.DefaultPages
+import dev.kordex.core.pagination.pages.Pages
 import java.util.*
 
 /**
@@ -26,7 +26,7 @@ import java.util.*
  * @param interaction Interaction response behaviour to work with.
  */
 public class PublicFollowUpPaginator(
-	pages: DefaultPages,
+	pages: Pages<Int>,
 	chunkedPages: Int = 1,
 	owner: UserBehavior? = null,
 	timeoutSeconds: Long? = null,

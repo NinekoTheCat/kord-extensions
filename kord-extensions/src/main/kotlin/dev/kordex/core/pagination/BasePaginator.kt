@@ -16,9 +16,10 @@ import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.embed
 import dev.kordex.core.DISCORD_BLURPLE
 import dev.kordex.core.ExtensibleBot
-import dev.kordex.core.i18n.types.Key
 import dev.kordex.core.koin.KordExKoinComponent
 import dev.kordex.core.pagination.builders.PageTransitionCallback
+import dev.kordex.core.pagination.group.Group
+import dev.kordex.core.pagination.pages.CountablePages
 import dev.kordex.core.pagination.pages.Page
 import dev.kordex.core.pagination.pages.Pages
 import io.github.oshai.kotlinlogging.KLogger
@@ -56,7 +57,7 @@ public val EXPAND_EMOJI: ReactionEmoji.Unicode = ReactionEmoji.Unicode("\u2139\u
  * **Note:** This is going to be renamed - it's not ready for use yet!
  *
  * @param pages Pages object containing this paginator's pages
- * @param pages How many "pages" should be displayed at once, from 1 to 9
+ * @param chunkedPages How many "pages" should be displayed at once, from 1 to 9
  * @param owner Optional paginator owner - setting this will prevent other users from interacting with the paginator
  * @param timeoutSeconds How long (in seconds) to wait before destroying the paginator, if needed
  * @param keepEmbed Set this to `false` to remove the paginator's message when it's destroyed
@@ -92,18 +93,18 @@ public abstract class BasePaginator(
 	public var currentPageNum: Int = 0
 
 	/** Currently-displayed page group. **/
-	public var currentGroup: Key = pages.defaultGroup
+	public var currentGroup: Group = pages.defaultGroup
 
 	/** Whether this paginator is currently active and processing events. **/
 	public open var active: Boolean = true
 
 	/** Set of all page groups. **/
-	public open var allGroups: List<Key> = pages.groups.toList()
+	public open val allGroups: List<Group> get() = pages.groups.toList()
 
 	init {
-		if (pages.isEmpty()) {
+		if (pages is CountablePages<Int> && pages.isEmpty())
 			error("Attempted to send a paginator with no pages in it")
-		}
+
 	}
 
 	/** Currently-displayed page object. **/
@@ -134,7 +135,7 @@ public abstract class BasePaginator(
 
 	/** Builder that generates an embed for the paginator's current context. **/
 	public open suspend fun MessageBuilder.applyPage() {
-		val groupEmoji = if (pages.groups.size > 1) {
+		val groupName = if (pages.groups.size > 1) {
 			currentGroup
 		} else {
 			null
@@ -145,16 +146,26 @@ public abstract class BasePaginator(
 				logger.debug { "Building page: $it" }
 
 				it.build(
-					locale = localeObj,
-					pageNum = currentPageNum,
-					chunkSize = chunkedPages,
-					pages = pages.pageCountForGroup(currentGroup),
-					group = groupEmoji,
-					groupIndex = allGroups.indexOf(currentGroup),
-					groups = allGroups.size,
-					shouldMutateFooter = chunkedPages == 1,
 					mutator = mutator?.pageMutator
 				)()
+				if (chunkedPages == 1) {
+					val footerSettings = if (pages is CountablePages<Int>)
+						Page.FooterPageNumberSettings(
+							chunkedPages,
+							pages.pageCountForGroup(currentGroup),
+							currentPageNum
+						)
+					else null
+
+					it.pageFooter(
+						this,
+						footerSettings,
+						locale = localeObj,
+						group = groupName,
+						groups = allGroups,
+					)
+				}
+
 			}
 		}
 
@@ -165,17 +176,7 @@ public abstract class BasePaginator(
 
 			Page {
 				color = DISCORD_BLURPLE
-			}.build(
-				localeObj,
-				currentPageNum,
-				chunkedPages,
-				pages.pageCountForGroup(currentGroup),
-				groupEmoji,
-				allGroups.indexOf(currentGroup),
-				allGroups.size,
-				shouldPutFooterInDescription = true,
-				mutator = mutator?.pageMutator
-			)(builder)
+			}.build(mutator?.pageMutator)(builder)
 
 			if (!builder.description.isNullOrEmpty()) {
 				if (this.embeds == null) {
@@ -206,19 +207,6 @@ public abstract class BasePaginator(
 	/** Destroy this paginator, removing its buttons and deleting its message if required. **/
 	public abstract suspend fun destroy()
 
-	/** Convenience function to go to call [goToPage] with the next page number, if we're not at the last page. **/
-	public open suspend fun nextPage() {
-		if (currentPageNum < pages.pageCountForGroup(currentGroup) - 1) {
-			goToPage(currentPageNum + chunkedPages)
-		}
-	}
-
-	/** Convenience function to go to call [goToPage] with the previous page number, if we're not at the first page. **/
-	public open suspend fun previousPage() {
-		if (currentPageNum >= chunkedPages - 1) {
-			goToPage(currentPageNum - chunkedPages)
-		}
-	}
 
 	/**
 	 * Register a callback that is called after the paginator times out.
@@ -243,3 +231,10 @@ public abstract class BasePaginator(
 		}
 	}
 }
+
+/** Convenience function to go to call [goToPage] with the next page number, if we're not at the last page. **/
+public suspend fun BasePaginator.goToNextPage(): Unit = goToPage(currentPageNum + chunkedPages)
+
+/** Convenience function to go to call [goToPage] with the previous page number, if we're not at the first page. **/
+
+public suspend fun BasePaginator.goToPreviousPage(): Unit = goToPage(currentPageNum - chunkedPages)

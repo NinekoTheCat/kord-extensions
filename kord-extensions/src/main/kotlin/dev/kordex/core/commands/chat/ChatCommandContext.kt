@@ -22,12 +22,12 @@ import dev.kordex.core.annotations.ExtensionDSL
 import dev.kordex.core.commands.Arguments
 import dev.kordex.core.commands.CommandContext
 import dev.kordex.core.extensions.base.HelpProvider
-import dev.kordex.core.i18n.EMPTY_KEY
 import dev.kordex.core.i18n.types.Key
 import dev.kordex.core.pagination.MessageButtonPaginator
 import dev.kordex.core.pagination.builders.PaginatorBuilder
+import dev.kordex.core.pagination.group.Group
+import dev.kordex.core.pagination.group.emptyGroup
 import dev.kordex.core.utils.MutableStringKeyedMap
-import dev.kordex.core.utils.getLocale
 import dev.kordex.core.utils.respond
 import dev.kordex.parser.StringParser
 
@@ -97,7 +97,7 @@ public open class ChatCommandContext<T : Arguments>(
 	 * you.
 	 */
 	public suspend fun paginator(
-		defaultGroup: Key = EMPTY_KEY,
+		defaultGroup: Group = emptyGroup,
 
 		pingInReply: Boolean = true,
 		targetChannel: MessageChannelBehavior? = null,

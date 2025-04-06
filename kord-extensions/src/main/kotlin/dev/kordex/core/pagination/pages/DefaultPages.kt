@@ -8,33 +8,33 @@
 
 package dev.kordex.core.pagination.pages
 
-import dev.kordex.core.i18n.EMPTY_KEY
-import dev.kordex.core.i18n.types.Key
+import dev.kordex.core.pagination.group.Group
+import dev.kordex.core.pagination.group.emptyGroup
 
 /**
  * Class representing a set of pages in a paginator. You can subclass this to customize it if you wish!
  *
  * @param defaultGroup Default page group, if you have more than one.
  */
-public open class DefaultPages(public override var defaultGroup: Key = EMPTY_KEY) : MutablePages<Int> {
-	override fun set(group: Key, page: Page) {
+public open class DefaultPages(public override var defaultGroup: Group = emptyGroup) :
+	MutablePages<Int>, CountablePages<Int> {
+	override fun set(group: Group, page: Page) {
 		internalGroups[group] = internalGroups[group] ?: mutableListOf()
 
 		internalGroups[group]!!.add(page)
 	}
 
-	public override val groups: MutableSet<Key>
+	public override val groups: MutableSet<Group>
 		get() = internalGroups.keys
-	private val internalGroups: LinkedHashMap<Key, MutableList<Page>> = linkedMapOf()
+	internal val internalGroups: LinkedHashMap<Group, MutableList<Page>> = linkedMapOf()
 
-	override fun isEmpty(): Boolean =
+
+	public override fun isEmpty(): Boolean =
 		internalGroups.isEmpty() || internalGroups.any { it.value.isEmpty() }
 
-	override fun pageCountForGroup(group: Key): Int = internalGroups[group]!!.size
+	public override fun pageCountForGroup(group: Group): Int = internalGroups[group]!!.size
 
-	public override fun get(page: Int): Page = get(defaultGroup, page)
-
-	public override fun get(group: Key, page: Int): Page {
+	public override fun get(group: Group, page: Int): Page {
 		if (internalGroups[group] == null) {
 			throw NoSuchElementException("No such group: $group")
 		}
@@ -57,30 +57,38 @@ public open class DefaultPages(public override var defaultGroup: Key = EMPTY_KEY
 
 public interface Pages<I> {
 	/** Retrieve the list of groups this instance has. **/
-	public val groups: Set<Key>
+	public val groups: Set<Group>
 
-	public val defaultGroup: Key
+	public val defaultGroup: Group
 
-	/**
-	 * @return `true` if there are no pages.
-	 */
-	public fun isEmpty(): Boolean
-
-	/**
-	 * @return count of pages for [group].
-	 */
-	public fun pageCountForGroup(group: Key): Int
-
-	/** Retrieve the page at the given index, from the default group. **/
-	public operator fun get(page: I): Page
 
 	/** Retrieve the page at the given index, from a given group. **/
-	public operator fun get(group: Key, page: I): Page
+	public operator fun get(group: Group, page: I): Page
 
 	/** Check that this Pages object is valid, throwing if it isn't. **/
 	public fun validate()
 }
 
-public interface MutablePages<I> : Pages<I> {
-	public operator fun set(group: Key, page: Page)
+public interface CountablePages<I> : Pages<I> {
+	/**
+	 * @return count of pages for [group].
+	 * @return the number of pages, or null if this doesn't support counting pages
+	 */
+	public fun pageCountForGroup(group: Group): Int
+
+	/**
+	 * @return `true` if there are no pages.
+	 */
+	public fun isEmpty(): Boolean
 }
+
+public interface MutablePages<I> : Pages<I> {
+	public operator fun set(group: Group = defaultGroup, page: Page)
+}
+
+public fun MutablePages<*>.addPage(group: Group, page: Page) {
+	this[group] = page
+}
+
+public operator fun <I> Pages<I>.get(page: I): Page = this[defaultGroup, page]
+

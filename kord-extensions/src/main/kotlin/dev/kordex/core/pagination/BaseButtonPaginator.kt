@@ -17,12 +17,13 @@ import dev.kordex.core.components.ComponentContainer
 import dev.kordex.core.components.buttons.PublicInteractionButton
 import dev.kordex.core.components.publicButton
 import dev.kordex.core.components.types.emoji
-import dev.kordex.core.i18n.EMPTY_KEY
 import dev.kordex.core.i18n.capitalizeWords
 import dev.kordex.core.i18n.generated.CoreTranslations
-import dev.kordex.core.i18n.types.Key
 import dev.kordex.core.pagination.builders.PageTransitionCallback
-import dev.kordex.core.pagination.pages.DefaultPages
+import dev.kordex.core.pagination.group.Group
+import dev.kordex.core.pagination.group.emptyGroup
+import dev.kordex.core.pagination.pages.CountablePages
+import dev.kordex.core.pagination.pages.Pages
 import dev.kordex.core.utils.scheduling.Scheduler
 import dev.kordex.core.utils.scheduling.Task
 import kotlinx.coroutines.runBlocking
@@ -34,7 +35,7 @@ import kotlin.math.roundToInt
  * Abstract class containing some common functionality needed by interactive button-based paginators.
  */
 public abstract class BaseButtonPaginator(
-	pages: DefaultPages,
+	pages: Pages<Int>,
 	chunkedPages: Int = 1,
 	owner: UserBehavior? = null,
 	timeoutSeconds: Long? = null,
@@ -77,11 +78,11 @@ public abstract class BaseButtonPaginator(
 	public open var switchButton: PublicInteractionButton<*>? = null
 
 	/** Group-specific buttons, if any. **/
-	public open val groupButtons: MutableMap<Key, PublicInteractionButton<*>> = mutableMapOf()
+	public open val groupButtons: MutableMap<Group, PublicInteractionButton<*>> = mutableMapOf()
 
 	/** Whether it's possible for us to have a row of group-switching buttons. **/
 	@Suppress("MagicNumber")
-	public val canUseSwitchingButtons: Boolean by lazy { allGroups.size in 3..5 && EMPTY_KEY !in allGroups }
+	public val canUseSwitchingButtons: Boolean by lazy { allGroups.size in 3..5 && emptyGroup !in allGroups }
 
 	/** A button-oriented check function that matches based on the [owner] property. **/
 	public val defaultCheck: CheckWithCache<ComponentInteractionCreateEvent> = {
@@ -116,7 +117,7 @@ public abstract class BaseButtonPaginator(
 			firstPageButton = components.publicButton {
 				deferredAck = true
 				style = ButtonStyle.Secondary
-				disabled = pages.pageCountForGroup(currentGroup) <= 1
+				disabled = if (pages is CountablePages<*>) pages.pageCountForGroup(currentGroup) <= 1 else false
 
 				check(defaultCheck)
 
@@ -133,14 +134,17 @@ public abstract class BaseButtonPaginator(
 			backButton = components.publicButton {
 				deferredAck = true
 				style = ButtonStyle.Secondary
-				disabled = pages.pageCountForGroup(currentGroup) <= 1
+				disabled = if (pages is CountablePages<Int>) {
+					pages.pageCountForGroup(currentGroup) <= 1
+				} else
+					false
 
 				check(defaultCheck)
 
 				emoji(LEFT_EMOJI)
 
 				action {
-					previousPage()
+					goToPreviousPage()
 
 					send()
 					task?.restart()
@@ -150,14 +154,17 @@ public abstract class BaseButtonPaginator(
 			nextButton = components.publicButton {
 				deferredAck = true
 				style = ButtonStyle.Secondary
-				disabled = pages.pageCountForGroup(currentGroup) <= chunkedPages
+				disabled = if (pages is CountablePages<Int>) {
+					(pages.pageCountForGroup(currentGroup) as Number).toInt() <= chunkedPages
+				} else
+					false
 
 				check(defaultCheck)
 
 				emoji(RIGHT_EMOJI)
 
 				action {
-					nextPage()
+					goToNextPage()
 
 					send()
 					task?.restart()
@@ -167,30 +174,40 @@ public abstract class BaseButtonPaginator(
 			lastPageButton = components.publicButton {
 				deferredAck = true
 				style = ButtonStyle.Secondary
-				disabled = pages.pageCountForGroup(currentGroup) <= chunkedPages
+				disabled = if (pages is CountablePages<Int>) {
+					pages.pageCountForGroup(currentGroup) <= chunkedPages
+				} else
+					false
 
 				check(defaultCheck)
 
 				emoji(LAST_PAGE_EMOJI)
 
 				action {
-					// This is a mess, but I'm not great at math.
-					goToPage(
-						ceil(
-							pages.pageCountForGroup(currentGroup).div(chunkedPages.toFloat())
+					if (pages is CountablePages<Int>) {
+						val pageCount = pages.pageCountForGroup(currentGroup)
+						// This is a mess, but I'm not great at math.
+						goToPage(
+							ceil(
+								pageCount.div(chunkedPages.toFloat())
+							)
+								.roundToInt()
+								.times(chunkedPages)
+								.minus(chunkedPages)
 						)
-							.roundToInt()
-							.times(chunkedPages)
-							.minus(chunkedPages)
-					)
 
+
+					} else {
+
+					}
 					send()
 					task?.restart()
+
 				}
 			}
 		}
-
-		if (pages.groups.map { pages.pageCountForGroup(it) }.any { it > 1 } || !keepEmbed) {
+		if (pages is CountablePages<Int>)
+			if (pages.groups.map { (pages.pageCountForGroup(it) as Number).toInt() }.any { it > 1 } || !keepEmbed) {
 			// Add the destroy button
 			components.publicButton(lastRowNumber) {
 				deferredAck = true
@@ -226,6 +243,7 @@ public abstract class BaseButtonPaginator(
 						deferredAck = true
 
 						label = group
+							.displayName
 							.withLocale(localeObj)
 							.capitalizeWords()
 
@@ -274,12 +292,13 @@ public abstract class BaseButtonPaginator(
 	/**
 	 * Convenience function to switch to a specific group.
 	 */
-	public suspend fun switchGroup(group: Key) {
+	public suspend fun switchGroup(group: Group) {
 		if (group == currentGroup) {
 			return
 		}
 
 		// To avoid out-of-bounds
+		if (pages is CountablePages<Int>)
 		currentPageNum = minOf(currentPageNum, pages.pageCountForGroup(group))
 		currentPages = getChunk()
 		currentGroup = group
@@ -306,7 +325,7 @@ public abstract class BaseButtonPaginator(
 
 			return
 		}
-
+		if (pages is CountablePages<Int>)
 		if (page < 0 || page > pages.pageCountForGroup(currentGroup) - 1) {
 			logger.debug { "Page number $page is too high!" }
 
@@ -330,7 +349,7 @@ public abstract class BaseButtonPaginator(
 			setEnabledButton(firstPageButton)
 			setEnabledButton(backButton)
 		}
-
+		if (pages is CountablePages<Int>)
 		if (currentPageNum + chunkedPages > pages.pageCountForGroup(currentGroup) - 1) {
 			setDisabledButton(nextButton)
 			setDisabledButton(lastPageButton)
