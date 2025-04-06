@@ -9,6 +9,7 @@
 package dev.kordex.core.extensions.impl
 
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kordex.core.annotations.ExperimentalPaginationApi
 import dev.kordex.core.builders.ExtensibleBotBuilder
 import dev.kordex.core.builders.extensions.HelpExtensionBuilder
 import dev.kordex.core.commands.Arguments
@@ -41,7 +42,10 @@ private val logger = KotlinLogging.logger {}
 /** Number of commands to show per page. */
 public const val HELP_PER_PAGE: Int = 4
 
+@ExperimentalPaginationApi
 private val COMMANDS_GROUP = EMPTY_KEY.toGroup()
+
+@ExperimentalPaginationApi
 private val ARGUMENTS_GROUP = "Arguments".toKey().toGroup()  // TODO: This needs translating
 
 /**
@@ -51,6 +55,7 @@ private val ARGUMENTS_GROUP = "Arguments".toKey().toGroup()  // TODO: This needs
  * along with a `!help <command>` to get more info about a specific command.
  */
 @Suppress("StringLiteralDuplication")
+@OptIn(ExperimentalPaginationApi::class)
 public class HelpExtension : HelpProvider, Extension() {
 	override val name: String = "kordex.help"
 
@@ -63,7 +68,6 @@ public class HelpExtension : HelpProvider, Extension() {
 	/** Help extension settings, from the bot builder. **/
 	public val settings: HelpExtensionBuilder =
 		botSettings.extensionsBuilder.helpExtensionBuilder
-
 	override suspend fun setup() {
 		chatCommand(::HelpArguments) {
 			name = CoreTranslations.Extensions.Help.commandName
@@ -84,6 +88,7 @@ public class HelpExtension : HelpProvider, Extension() {
 		}
 	}
 
+	@ExperimentalPaginationApi
 	override suspend fun getMainHelpPaginator(event: MessageCreateEvent, prefix: String): BasePaginator {
 		var totalCommands = 0
 		val locale = event.getLocale()
@@ -177,18 +182,21 @@ public class HelpExtension : HelpProvider, Extension() {
 		}
 	}
 
+	@ExperimentalPaginationApi
 	override suspend fun getCommandHelpPaginator(
 		event: MessageCreateEvent,
 		prefix: String,
 		args: List<String>,
 	): BasePaginator = getCommandHelpPaginator(event, prefix, getCommand(event, args))
 
+	@ExperimentalPaginationApi
 	override suspend fun getCommandHelpPaginator(
 		context: ChatCommandContext<*>,
 		args: List<String>,
 	): BasePaginator =
 		getCommandHelpPaginator(context, getCommand(context.event, args))
 
+	@ExperimentalPaginationApi
 	override suspend fun getCommandHelpPaginator(
 		event: MessageCreateEvent,
 		prefix: String,

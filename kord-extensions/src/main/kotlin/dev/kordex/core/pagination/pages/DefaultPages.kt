@@ -8,6 +8,7 @@
 
 package dev.kordex.core.pagination.pages
 
+import dev.kordex.core.annotations.ExperimentalPaginationApi
 import dev.kordex.core.pagination.group.Group
 import dev.kordex.core.pagination.group.emptyGroup
 
@@ -16,6 +17,7 @@ import dev.kordex.core.pagination.group.emptyGroup
  *
  * @param defaultGroup Default page group, if you have more than one.
  */
+@ExperimentalPaginationApi
 public open class DefaultPages(public override var defaultGroup: Group = emptyGroup) :
 	MutablePages<Int>, CountablePages<Int> {
 	override fun set(group: Group, page: Page) {
@@ -55,6 +57,7 @@ public open class DefaultPages(public override var defaultGroup: Group = emptyGr
 	}
 }
 
+@ExperimentalPaginationApi
 public interface Pages<I> {
 	/** Retrieve the list of groups this instance has. **/
 	public val groups: Set<Group>
@@ -69,6 +72,7 @@ public interface Pages<I> {
 	public fun validate()
 }
 
+@ExperimentalPaginationApi
 public interface CountablePages<I> : Pages<I> {
 	/**
 	 * @return count of pages for [group].
@@ -82,13 +86,16 @@ public interface CountablePages<I> : Pages<I> {
 	public fun isEmpty(): Boolean
 }
 
+@ExperimentalPaginationApi
 public interface MutablePages<I> : Pages<I> {
 	public operator fun set(group: Group = defaultGroup, page: Page)
 }
 
+@ExperimentalPaginationApi
 public fun MutablePages<*>.addPage(group: Group, page: Page) {
 	this[group] = page
 }
 
+@ExperimentalPaginationApi
 public operator fun <I> Pages<I>.get(page: I): Page = this[defaultGroup, page]
 

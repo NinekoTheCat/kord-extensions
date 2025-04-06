@@ -5,9 +5,10 @@
  * Dublin.
  * Any redistribution must include the specific provision above.
  */
-
+@file:OptIn(ExperimentalPaginationApi::class)
 package dev.kordex.core.pagination.pages.lazy
 
+import dev.kordex.core.annotations.ExperimentalPaginationApi
 import dev.kordex.core.i18n.toKey
 import dev.kordex.core.pagination.group.toGroup
 import dev.kordex.core.pagination.pages.Page

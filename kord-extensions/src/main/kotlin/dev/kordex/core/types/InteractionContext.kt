@@ -16,6 +16,7 @@ import dev.kord.core.entity.interaction.response.MessageInteractionResponse
 import dev.kord.rest.builder.message.create.FollowupMessageCreateBuilder
 import dev.kord.rest.builder.message.modify.InteractionResponseModifyBuilder
 import dev.kordex.core.annotations.AlwaysPublicResponse
+import dev.kordex.core.annotations.ExperimentalPaginationApi
 import dev.kordex.core.annotations.UnexpectedFunctionBehaviour
 import dev.kordex.core.pagination.BaseButtonPaginator
 import dev.kordex.core.pagination.builders.PaginatorBuilder
@@ -49,6 +50,7 @@ public interface InteractionContext<
 	public val interactionResponse: ResponseBehavior
 
 	/** Create a paginator that edits the original interaction response. **/
+	@ExperimentalPaginationApi
 	public fun editingPaginator(
 		defaultGroup: Group = emptyGroup,
 		locale: Locale? = null,
@@ -61,6 +63,7 @@ public interface InteractionContext<
 	 * This function always creates a public follow-up, as Discord prevents bots from editing ephemeral follow-ups.
 	 */
 	@AlwaysPublicResponse
+	@ExperimentalPaginationApi
 	public suspend fun respondingPaginator(
 		defaultGroup: Group = emptyGroup,
 		locale: Locale? = null,

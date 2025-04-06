@@ -18,6 +18,7 @@ import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.entity.Message
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kordex.core.annotations.ExperimentalPaginationApi
 import dev.kordex.core.annotations.ExtensionDSL
 import dev.kordex.core.commands.Arguments
 import dev.kordex.core.commands.CommandContext
@@ -96,6 +97,7 @@ public open class ChatCommandContext<T : Arguments>(
 	 * Convenience function to create a button paginator using a builder DSL syntax. Handles the contextual stuff for
 	 * you.
 	 */
+	@ExperimentalPaginationApi
 	public suspend fun paginator(
 		defaultGroup: Group = emptyGroup,
 
@@ -118,6 +120,7 @@ public open class ChatCommandContext<T : Arguments>(
 	 *
 	 * @return `true` if a help extension exists and help was sent, `false` otherwise.
 	 */
+	@OptIn(ExperimentalPaginationApi::class)
 	public suspend fun sendHelp(): Boolean {
 		val helpExtension = this.command.extension.bot.findExtension<HelpProvider>() ?: return false
 		val paginator = helpExtension.getCommandHelpPaginator(this, chatCommand)

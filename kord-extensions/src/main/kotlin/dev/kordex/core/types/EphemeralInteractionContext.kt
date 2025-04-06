@@ -18,6 +18,7 @@ import dev.kord.core.entity.interaction.response.EphemeralMessageInteractionResp
 import dev.kord.rest.builder.message.create.FollowupMessageCreateBuilder
 import dev.kord.rest.builder.message.modify.InteractionResponseModifyBuilder
 import dev.kordex.core.annotations.AlwaysPublicResponse
+import dev.kordex.core.annotations.ExperimentalPaginationApi
 import dev.kordex.core.annotations.UnexpectedFunctionBehaviour
 import dev.kordex.core.pagination.EphemeralResponsePaginator
 import dev.kordex.core.pagination.PublicFollowUpPaginator
@@ -50,6 +51,7 @@ public interface EphemeralInteractionContext : InteractionContext<
 		builder: suspend InteractionResponseModifyBuilder.() -> Unit,
 	): EphemeralMessageInteractionResponse = interactionResponse.edit { builder() }
 
+	@ExperimentalPaginationApi
 	public override fun editingPaginator(
 		defaultGroup: Group,
 		locale: Locale?,
@@ -63,6 +65,7 @@ public interface EphemeralInteractionContext : InteractionContext<
 	}
 
 	@AlwaysPublicResponse
+	@ExperimentalPaginationApi
 	public override suspend fun respondingPaginator(
 		defaultGroup: Group,
 		locale: Locale?,

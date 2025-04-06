@@ -16,6 +16,7 @@ import dev.kord.rest.builder.message.MessageBuilder
 import dev.kord.rest.builder.message.embed
 import dev.kordex.core.DISCORD_BLURPLE
 import dev.kordex.core.ExtensibleBot
+import dev.kordex.core.annotations.ExperimentalPaginationApi
 import dev.kordex.core.koin.KordExKoinComponent
 import dev.kordex.core.pagination.builders.PageTransitionCallback
 import dev.kordex.core.pagination.group.Group
@@ -64,6 +65,7 @@ public val EXPAND_EMOJI: ReactionEmoji.Unicode = ReactionEmoji.Unicode("\u2139\u
  * @param switchEmoji The `ReactionEmoji` to use for group switching
  * @param locale A Locale object for this pagination context, which defaults to the bot's default locale
  */
+@ExperimentalPaginationApi
 public abstract class BasePaginator(
 	public val pages: Pages<Int>,
 	public open val chunkedPages: Int = 1,
@@ -233,8 +235,9 @@ public abstract class BasePaginator(
 }
 
 /** Convenience function to go to call [goToPage] with the next page number, if we're not at the last page. **/
+@ExperimentalPaginationApi
 public suspend fun BasePaginator.goToNextPage(): Unit = goToPage(currentPageNum + chunkedPages)
 
 /** Convenience function to go to call [goToPage] with the previous page number, if we're not at the first page. **/
-
+@ExperimentalPaginationApi
 public suspend fun BasePaginator.goToPreviousPage(): Unit = goToPage(currentPageNum - chunkedPages)

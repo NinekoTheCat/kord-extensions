@@ -11,6 +11,7 @@ package dev.kordex.core.extensions.impl
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.reply
 import dev.kordex.core.DISCORD_BLURPLE
+import dev.kordex.core.annotations.ExperimentalPaginationApi
 import dev.kordex.core.builders.ExtensibleBotBuilder
 import dev.kordex.core.builders.about.Copyright
 import dev.kordex.core.builders.about.CopyrightType
@@ -23,7 +24,7 @@ import dev.kordex.core.extensions.publicSlashCommand
 import dev.kordex.core.i18n.generated.CoreTranslations
 import dev.kordex.core.pagination.builders.PaginatorBuilder
 import org.koin.core.component.inject
-import java.util.Locale
+import java.util.*
 
 @Suppress("StringLiteralDuplication", "MagicNumber")
 public class AboutExtension : Extension() {
@@ -31,6 +32,7 @@ public class AboutExtension : Extension() {
 
 	private val settings: ExtensibleBotBuilder by inject()
 
+	@OptIn(ExperimentalPaginationApi::class)
 	override suspend fun setup() {
 		val ephemeral = settings.aboutBuilder.ephemeral
 
@@ -154,6 +156,7 @@ public class AboutExtension : Extension() {
 		}
 	}
 
+	@ExperimentalPaginationApi
 	public fun PaginatorBuilder.addCopyright(owner: UserBehavior?, locale: Locale) {
 		val copyright = settings.aboutBuilder.copyrightItems +
 			settings.pluginBuilder.managerObj.plugins.map {

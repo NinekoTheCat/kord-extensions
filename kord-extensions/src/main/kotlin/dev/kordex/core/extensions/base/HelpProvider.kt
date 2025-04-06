@@ -9,6 +9,7 @@
 package dev.kordex.core.extensions.base
 
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kordex.core.annotations.ExperimentalPaginationApi
 import dev.kordex.core.commands.Arguments
 import dev.kordex.core.commands.chat.ChatCommand
 import dev.kordex.core.commands.chat.ChatCommandContext
@@ -90,6 +91,7 @@ public interface HelpProvider {
 	 *
 	 * @return Paginator containing the command's help, or an error message.
 	 */
+	@ExperimentalPaginationApi
 	public suspend fun getCommandHelpPaginator(
 		event: MessageCreateEvent,
 		prefix: String,
@@ -107,6 +109,7 @@ public interface HelpProvider {
 	 *
 	 * @return Paginator containing the command's help, or an error message.
 	 */
+	@ExperimentalPaginationApi
 	public suspend fun getCommandHelpPaginator(
 		context: ChatCommandContext<*>,
 		args: List<String>,
@@ -131,6 +134,7 @@ public interface HelpProvider {
 	 *
 	 * @return Paginator containing the command's help, or an error message.
 	 */
+	@ExperimentalPaginationApi
 	public suspend fun getCommandHelpPaginator(
 		event: MessageCreateEvent,
 		prefix: String,
@@ -151,6 +155,7 @@ public interface HelpProvider {
 	 *
 	 * @return Paginator containing the command's help, or an error message.
 	 */
+	@ExperimentalPaginationApi
 	public suspend fun getCommandHelpPaginator(
 		context: ChatCommandContext<*>,
 		command: ChatCommand<out Arguments>?,
@@ -175,6 +180,7 @@ public interface HelpProvider {
 	 *
 	 * @return Paginator containing help information for all loaded commands with passing checks.
 	 */
+	@ExperimentalPaginationApi
 	public suspend fun getMainHelpPaginator(event: MessageCreateEvent, prefix: String): BasePaginator
 
 	/**
@@ -191,6 +197,7 @@ public interface HelpProvider {
 	 *
 	 * @return BasePaginator containing help information for all loaded commands with passing checks.
 	 */
+	@ExperimentalPaginationApi
 	public suspend fun getMainHelpPaginator(context: ChatCommandContext<*>): BasePaginator {
 		val prefix = getKoin().get<ChatCommandRegistry>().getPrefix(context.event)
 

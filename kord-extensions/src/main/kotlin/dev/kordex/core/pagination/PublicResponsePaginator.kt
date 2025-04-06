@@ -12,6 +12,7 @@ import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.interaction.response.PublicMessageInteractionResponseBehavior
 import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.entity.ReactionEmoji
+import dev.kordex.core.annotations.ExperimentalPaginationApi
 import dev.kordex.core.pagination.builders.PageTransitionCallback
 import dev.kordex.core.pagination.builders.PaginatorBuilder
 import dev.kordex.core.pagination.pages.Pages
@@ -22,6 +23,7 @@ import java.util.*
  *
  * @param interaction Interaction response behaviour to work with.
  */
+@ExperimentalPaginationApi
 public class PublicResponsePaginator(
 	pages: Pages<Int>,
 	chunkedPages: Int = 1,
@@ -74,6 +76,7 @@ public class PublicResponsePaginator(
 
 /** Convenience function for creating an interaction button paginator from a paginator builder. **/
 @Suppress("FunctionNaming")  // Factory function
+@ExperimentalPaginationApi
 public fun PublicResponsePaginator(
 	builder: PaginatorBuilder,
 	interaction: PublicMessageInteractionResponseBehavior,

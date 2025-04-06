@@ -10,6 +10,7 @@ package dev.kordex.core.pagination.pages
 
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kordex.core.ExtensibleBot
+import dev.kordex.core.annotations.ExperimentalPaginationApi
 import dev.kordex.core.i18n.generated.CoreTranslations
 import dev.kordex.core.koin.KordExKoinComponent
 import dev.kordex.core.pagination.builders.PageMutator
@@ -26,6 +27,7 @@ import kotlin.math.roundToInt
  *
  * @param builder Embed builder callable for building the page's embed
  */
+@ExperimentalPaginationApi
 public open class Page(
 	public open val builder: suspend EmbedBuilder.() -> Unit,
 ) : KordExKoinComponent {

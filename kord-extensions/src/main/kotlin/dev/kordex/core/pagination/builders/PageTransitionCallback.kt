@@ -9,13 +9,17 @@
 package dev.kordex.core.pagination.builders
 
 import dev.kord.rest.builder.message.EmbedBuilder
+import dev.kordex.core.annotations.ExperimentalPaginationApi
 import dev.kordex.core.pagination.BasePaginator
 import dev.kordex.core.pagination.pages.Page
 
+@ExperimentalPaginationApi
 public typealias PageMutator = suspend EmbedBuilder.(page: Page) -> Unit
+@ExperimentalPaginationApi
 public typealias PaginatorMutator = suspend BasePaginator.() -> Unit
 
 /** Builder containing callbacks used to modify paginators and their page content. **/
+@ExperimentalPaginationApi
 public class PageTransitionCallback {
 	/** @suppress Variable storing the page mutator. **/
 	public var pageMutator: PageMutator? = null

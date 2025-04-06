@@ -11,6 +11,7 @@ package dev.kordex.core.pagination.builders
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.entity.ReactionEmoji
 import dev.kord.rest.builder.message.EmbedBuilder
+import dev.kordex.core.annotations.ExperimentalPaginationApi
 import dev.kordex.core.pagination.group.Group
 import dev.kordex.core.pagination.group.emptyGroup
 import dev.kordex.core.pagination.pages.DefaultPages
@@ -25,6 +26,7 @@ import java.util.*
  * @param locale Locale to use for the paginator
  * @param defaultGroup Default page group, if any
  */
+@ExperimentalPaginationApi
 public class PaginatorBuilder(
 	public var locale: Locale? = null,
 	public val defaultGroup: Group = emptyGroup,

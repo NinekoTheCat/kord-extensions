@@ -8,6 +8,7 @@
 
 package dev.kordex.core.pagination.pages.lazy
 
+import dev.kordex.core.annotations.ExperimentalPaginationApi
 import dev.kordex.core.pagination.group.Group
 import dev.kordex.core.pagination.group.emptyGroup
 import dev.kordex.core.pagination.pages.CountablePages
@@ -19,6 +20,7 @@ import dev.kordex.core.pagination.pages.Pages
  *
  * @param defaultGroup Default page group, if you have more than one.
  */
+@ExperimentalPaginationApi
 public open class DefaultLazyPages(defaultGroup: Group = emptyGroup) :
 	LazyPages<Int, LazyPageProvider<Int>>(defaultGroup) {
 	public constructor(defaultGroup: Group = emptyGroup, provider: (page: Int) -> Page) : this(defaultGroup) {
@@ -47,6 +49,7 @@ public open class DefaultLazyPages(defaultGroup: Group = emptyGroup) :
 /**
  * same as [DefaultLazyPages] but it is countable
  */
+@ExperimentalPaginationApi
 public open class CountableLazyPages(
 	defaultGroup: Group = emptyGroup,
 ) : CountablePages<Int>, LazyPages<Int, LazyPageProviderWithSize<Int>>(defaultGroup) {
@@ -86,6 +89,7 @@ public open class CountableLazyPages(
 
 }
 
+@ExperimentalPaginationApi
 public fun LazyPageProvider<Int>.pageCountOrNull(): Int? =
 	if (this is LazyPageProviderWithSize<Int>) {
 		(this.pageCount() as Number).toInt()
@@ -93,6 +97,7 @@ public fun LazyPageProvider<Int>.pageCountOrNull(): Int? =
 		null
 	}
 
+@ExperimentalPaginationApi
 public abstract class LazyPages<I, P : LazyPageProvider<I>>(override var defaultGroup: Group = emptyGroup) : Pages<I> {
 	public constructor(
 		defaultGroup: Group = emptyGroup,
@@ -113,6 +118,8 @@ public abstract class LazyPages<I, P : LazyPageProvider<I>>(override var default
 		providers[group] = provider
 	}
 }
+
+@ExperimentalPaginationApi
 public interface LazyPageProvider<I> {
 	/**
 	 * @return [Page] on index [page]
@@ -121,6 +128,7 @@ public interface LazyPageProvider<I> {
 	public operator fun get(page: I): Page
 }
 
+@ExperimentalPaginationApi
 public interface LazyPageProviderWithSize<I> : LazyPageProvider<I> {
 	/**
 	 * amount of pages that this provider can currently return.
@@ -131,6 +139,7 @@ public interface LazyPageProviderWithSize<I> : LazyPageProvider<I> {
 /**
  * returns a provider that calls the function [f] for [LazyPageProvider.get].
  */
+@ExperimentalPaginationApi
 public fun <I> pageProvider(f: (page: I) -> Page): LazyPageProvider<I> = object : LazyPageProvider<I> {
 	override fun get(page: I): Page = f.invoke(page)
 }
@@ -138,6 +147,7 @@ public fun <I> pageProvider(f: (page: I) -> Page): LazyPageProvider<I> = object 
 /**
  * returns a provider that calls the function [f] for [LazyPageProviderWithSize.get] and has a fixed [size].
  */
+@ExperimentalPaginationApi
 public fun <I> pageProviderWithSize(
 	f: (page: I) -> Page,
 	size: Int,
@@ -147,6 +157,7 @@ public fun <I> pageProviderWithSize(
  * returns a provider that calls the function [f] for [LazyPageProviderWithSize.get]
  * and calls [s] for [LazyPageProviderWithSize.pageCount].
  */
+@ExperimentalPaginationApi
 public fun <I> pageProviderWithDynamicSize(
 	f: (page: I) -> (Page),
 	s: () -> Int,
@@ -156,6 +167,7 @@ public fun <I> pageProviderWithDynamicSize(
 }
 
 /** Add a [LazyPageProviderWithSize] to the [group] from a function. with a fixed [size]**/
+@ExperimentalPaginationApi
 public fun <I> LazyPages<I, LazyPageProviderWithSize<I>>.addProvider(
 	provider: (page: I) -> Page,
 	size: Int,
@@ -165,6 +177,7 @@ public fun <I> LazyPages<I, LazyPageProviderWithSize<I>>.addProvider(
 }
 
 /** Add a [LazyPageProviderWithSize] to the [group] from a function. with a dynamic size from [sizeCalculator]**/
+@ExperimentalPaginationApi
 public fun <I> LazyPages<I, LazyPageProviderWithSize<I>>.addProvider(
 	provider: (page: I) -> Page,
 	sizeCalculator: () -> Int,

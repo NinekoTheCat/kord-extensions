@@ -15,6 +15,7 @@ import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.ReactionEmoji
 import dev.kord.rest.builder.message.allowedMentions
+import dev.kordex.core.annotations.ExperimentalPaginationApi
 import dev.kordex.core.pagination.builders.PageTransitionCallback
 import dev.kordex.core.pagination.builders.PaginatorBuilder
 import dev.kordex.core.pagination.pages.Pages
@@ -27,6 +28,7 @@ import java.util.*
  * @param targetMessage Target message to reply to, overriding [targetChannel].
  * @param targetChannel Target channel to send the paginator to, if [targetMessage] isn't provided.
  */
+@ExperimentalPaginationApi
 public class MessageButtonPaginator(
 	pages: Pages<Int>,
 	chunkedPages: Int = 1,
@@ -104,6 +106,7 @@ public class MessageButtonPaginator(
 
 /** Convenience function for creating a message button paginator from a paginator builder. **/
 @Suppress("FunctionNaming")  // Factory function
+@ExperimentalPaginationApi
 public fun MessageButtonPaginator(
 	pingInReply: Boolean = true,
 	targetChannel: MessageChannelBehavior? = null,

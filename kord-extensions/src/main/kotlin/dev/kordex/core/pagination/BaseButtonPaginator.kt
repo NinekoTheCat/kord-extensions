@@ -12,6 +12,7 @@ import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.event.interaction.ComponentInteractionCreateEvent
+import dev.kordex.core.annotations.ExperimentalPaginationApi
 import dev.kordex.core.checks.types.CheckWithCache
 import dev.kordex.core.components.ComponentContainer
 import dev.kordex.core.components.buttons.PublicInteractionButton
@@ -34,6 +35,7 @@ import kotlin.math.roundToInt
 /**
  * Abstract class containing some common functionality needed by interactive button-based paginators.
  */
+@ExperimentalPaginationApi
 public abstract class BaseButtonPaginator(
 	pages: Pages<Int>,
 	chunkedPages: Int = 1,
